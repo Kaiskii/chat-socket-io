@@ -4,7 +4,7 @@
   "description": "Socket.io Experimentation",
   "main": "index.js",
   "scripts": {
-    "dev": "npx nodemon ./src/server.js",
+    "dev": "npx nodemon -I ./src/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Kaiskii",

@@ -3,27 +3,23 @@ const app = require('express')();
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
 
-// readLine for CLI
-const readline = require('readline').createInterface({input: process.stdin, output: process.stdout, prompt: "=> "});
-
 // Debug and Logging
 const morgan = require('morgan');
 
-// randNick
-const rn = require('./randNick');
+// Functions
+const rn = require('./functions/randNick');
+const { logOnlineUsers, rlRead, elevatePrompt } = require('./functions/commandLogic'); 
+
+// Routes
+const {customDisconnect, changeNick, message} = require('./routes');
 
 // Socket.io Actions
 // Refactor the Commands for Socket.io into REDUX format and have them in separate "types" file [Done]
 // Refactored Action Types into Routes
-const {socketAction, cliAction} = require('./types');
+const {socketAction} = require('./types');
 
 // Socket Actions
 const { CONNECTION, DISCONNECTING, CHANGE_NICK, SEND_NICK, CHAT_MSG } = socketAction;
-// CLI Actions
-const { ONLINE } = cliAction;
-
-// Routes
-const {customDisconnect, changeNick, message} = require('./routes');
 
 let userList = [];
 
@@ -62,34 +58,11 @@ io.on(CONNECTION, (socket) => {
 server.listen(4000, () => {
     console.log("Server is up and running!\n");
 
-    LogOnlineUsers();
+    logOnlineUsers(userList);
 
-    readline.prompt(true);
-});
-
-const LogOnlineUsers = () => {
-    console.log("Users Online: \n", userList);
-}
-
-readline.on('line', (cmd) => {
-    // console.log("You just typed: " + cmd);
-    let command = cmd.split(" ");
     console.log();
-    
-    if(cmd.trim() !== ''){
-        switch(command[0].trim().toLowerCase()){
-            case ONLINE:
-                LogOnlineUsers();
-                console.log();
-                break;
-            default:
-                console.log( "Command \"" + command[0].trim() + "\" doesn't exist!");
-                break;
-        }
-    }
-    
-    readline.prompt(true);
-}).on('close', () => {
-    console.log("Nice");
-    process.exit(0);
+
+    elevatePrompt();
 });
+
+rlRead(userList);
