@@ -6,7 +6,7 @@ module.exports = customDisconnect = (socket, io, CHAT_MSG, userList) => {
             const {id, name} = m;
 
             if(id === socket.id){
-                console.log("Promise Search Index: " + i);
+                // console.log("Promise Search Index: " + i);
                 usrIndex = i;
                 return m;
             }
@@ -26,7 +26,7 @@ module.exports = customDisconnect = (socket, io, CHAT_MSG, userList) => {
         }
 
         userList.splice(usrIndex, 1);
-        console.log(userList);
+        // console.log(userList);
     });
 
     findUserPromise.catch((error) => {

@@ -2,7 +2,9 @@
 const app = require('express')();
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
-const readline = require('readline').createInterface({ input: process.stdin, output: process.stdout });
+
+// readLine for CLI
+const readline = require('readline').createInterface({input: process.stdin, output: process.stdout, prompt: "=> "});
 
 // Debug and Logging
 const morgan = require('morgan');
@@ -12,7 +14,13 @@ const rn = require('./randNick');
 
 // Socket.io Actions
 // Refactor the Commands for Socket.io into REDUX format and have them in separate "types" file [Done]
-const { CONNECTION, DISCONNECTING, CHANGE_NICK, SEND_NICK, CHAT_MSG } = require('./actionTypes');
+// Refactored Action Types into Routes
+const {socketAction, cliAction} = require('./types');
+
+// Socket Actions
+const { CONNECTION, DISCONNECTING, CHANGE_NICK, SEND_NICK, CHAT_MSG } = socketAction;
+// CLI Actions
+const { ONLINE } = cliAction;
 
 // Routes
 const {customDisconnect, changeNick, message} = require('./routes');
@@ -50,16 +58,38 @@ io.on(CONNECTION, (socket) => {
 
 
 //! Very important, it needs to use http cause socket.io wont work with app.listen
-server.listen(4000, () =>{
-    console.log("Server is up and running!");
+//! Change Port to process.env.port
+server.listen(4000, () => {
+    console.log("Server is up and running!\n");
 
-    console.log("Users Online: \n" + userList);
+    LogOnlineUsers();
 
-
-    readline.setPrompt("> ");
     readline.prompt(true);
-    readline.on('line', (cmd) => {
-        console.log("You just typed: ", cmd);
-        readline.prompt(true);
-    })
+});
+
+const LogOnlineUsers = () => {
+    console.log("Users Online: \n", userList);
+}
+
+readline.on('line', (cmd) => {
+    // console.log("You just typed: " + cmd);
+    let command = cmd.split(" ");
+    console.log();
+    
+    if(cmd.trim() !== ''){
+        switch(command[0].trim().toLowerCase()){
+            case ONLINE:
+                LogOnlineUsers();
+                console.log();
+                break;
+            default:
+                console.log( "Command \"" + command[0].trim() + "\" doesn't exist!");
+                break;
+        }
+    }
+    
+    readline.prompt(true);
+}).on('close', () => {
+    console.log("Nice");
+    process.exit(0);
 });
