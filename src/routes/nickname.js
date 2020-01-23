@@ -1,16 +1,22 @@
-module.exports = (socket, io, newNick, userList) => {
+module.exports = (socket, io, newNick, userList, channelList) => {
 
-    let tempUIndex = 0;
+    let tempUIndex = -1;
 
-    userList.find((m, i) => {
-        const {id, name} = m;
-
-        
-        if(id === socket.id){
-            tempUIndex = i;
-            return m;
+    for(let i = 0; i < channelList.length; i++){
+        if(tempUIndex != -1){
+            continue;
         }
-    });
 
-    userList[tempUIndex].name = newNick;
+        userList[channelList[i]].find((m, index) => {
+            const {id, name} = m;
+
+            if(id === socket.id){
+                tempUIndex = index;
+                channelIndex = i;
+                return m;
+            }
+        });
+    }
+
+    userList[channelList[channelIndex]][tempUIndex].name = newNick;
 };

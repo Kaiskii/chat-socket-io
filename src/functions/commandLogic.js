@@ -20,6 +20,7 @@ const logOnlineUsers = (userList) => {
     console.log("Users Online: \n", userList);
 }
 
+//Reading Line
 const rlRead = (userList) => {
     readline.on('line', (cmd) => {
         // console.log("You just typed: " + cmd);

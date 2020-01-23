@@ -1,9 +1,9 @@
 const customDisconnect = require('./disconnect');
 const changeNick = require('./nickname');
-const message = require('./message');
+const global_message = require('./message');
 
 module.exports = {
     customDisconnect,
     changeNick,
-    message,
+    global_message,
 };

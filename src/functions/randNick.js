@@ -10,6 +10,6 @@ const Dictionary = [
 
 module.exports = {
     retNick: () => {
-        return Dictionary[Math.floor(Math.random() * Dictionary.length)] + Dictionary[Math.floor(Math.random() * Dictionary.length)] + Dictionary[Math.floor(Math.random() * Dictionary.length)]
+        return Dictionary[Math.floor(Math.random() * Dictionary.length)] + Dictionary[Math.floor(Math.random() * Dictionary.length)] + Dictionary[Math.floor(Math.random() * Dictionary.length)];
     }
 }

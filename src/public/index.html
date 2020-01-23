@@ -40,6 +40,7 @@
         const msgElement = document.getElementById("m");
         
         let nickId = "";
+        let roomName = "";
 
         $('form').submit((e) => {
           e.preventDefault();
@@ -57,10 +58,12 @@
           }
 
           //Sending the msg, Refactor to Discord Send Pending. Offload to Client instead of Server Handling
-          if($('#m').val()){
-            // console.log($('#m').val());
-            socket.emit('chat msg', nickId + " : " + $('#m').val());
-            $('#m').val("");
+          if(roomName !== ""){
+            if($('#m').val()){
+              // console.log($('#m').val());
+              socket.emit('chat msg', nickId + " : " + $('#m').val());
+              $('#m').val("");
+            }
           }
           
           return false;
@@ -74,9 +77,11 @@
         //Setting Nick when receiving Nick
         socket.on("nick", (nick) => {
           nickId = nick;
-
-          // console.log(nickId);
         });
+
+        socket.on("room", (room) => {
+          roomName = room;
+        })
         
         // setInterval(() => {
         //     if($('#m').val()){
