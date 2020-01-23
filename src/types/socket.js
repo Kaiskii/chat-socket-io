@@ -5,4 +5,5 @@ module.exports = {
     CHANGE_NICK: 'change nick',
     SEND_NICK: 'nick',
     SEND_ROOM: 'room',
+    JOIN_ROOM: 'join room',
 };

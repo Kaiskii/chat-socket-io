@@ -5,7 +5,7 @@
  * Refactor Idea: Use an online Dict?
  */
 const Dictionary = [
-    "Elephant", "Tortoise", "Cat", "Dog", "Japan", "Star", "Square", "Triangle", "Fish",
+    "Elephant", "Tortoise", "Cat", "Dog", "Japan", "Star", "Square", "Triangle", "Fish", "Duck", "Rabbit", "Alpaca", "Camel", "Newt", "Beetle",
 ]
 
 module.exports = {

@@ -8,7 +8,7 @@ const morgan = require('morgan');
 
 // Functions
 const rn = require('./functions/randNick');
-const { logOnlineUsers, rlRead, elevatePrompt } = require('./functions/commandLogic'); 
+const { ConsoleLogOnlineUsers, RLRead, ElevatePrompt } = require('./functions/commandLogic'); 
 
 // Routes
 const {customDisconnect, changeNick, global_message} = require('./routes');
@@ -19,11 +19,15 @@ const {customDisconnect, changeNick, global_message} = require('./routes');
 const {socketAction, channelRoom} = require('./types');
 
 // Socket Actions
-const { CONNECTION, DISCONNECTING, CHANGE_NICK, SEND_NICK, CHAT_MSG, SEND_ROOM } = socketAction;
-const { CHANNELS, CHANNEL_ENUMS } = channelRoom;
+const { CONNECTION, DISCONNECTING, CHANGE_NICK, SEND_NICK, CHAT_MSG, SEND_ROOM, JOIN_ROOM } = socketAction;
+const { CHANNELS } = channelRoom;
 
-let userList = [];
+const defaultChannel = 'lobby';
+
+let quickUserList = {};
+
 let channelList = Object.getOwnPropertyNames(CHANNELS);
+
 
 app.use(morgan('tiny'));
 
@@ -41,12 +45,14 @@ io.on(CONNECTION, (socket) => {
     InitializeUser(socket, io);
     
     // Relay for Chat Msgs
-    socket.on(CHAT_MSG, (msg) => {global_message(socket, io, CHAT_MSG, msg)});
+    socket.on(CHAT_MSG, (msg) => {global_message(socket, io, CHAT_MSG, msg, quickUserList[socket.id].shard)});
     // Changing Nickname
-    socket.on(CHANGE_NICK, (newNick) => {changeNick(socket, io, newNick, userList, channelList)});
+    socket.on(CHANGE_NICK, (newNick) => {changeNick(socket, io, newNick, quickUserList)});
+    // Join Room
+    socket.on(JOIN_ROOM, (info) => {AssignUserRoom(socket, "", info.room, info.switchRoom)})
 
     // Disconnection from Server will display a Msg
-    socket.on(DISCONNECTING, () => {customDisconnect(socket, io, CHAT_MSG, userList, channelList, CHANNEL_ENUMS)});
+    socket.on(DISCONNECTING, () => {customDisconnect(socket, io, CHAT_MSG, quickUserList, channelList)});
 });
 
 
@@ -54,56 +60,77 @@ io.on(CONNECTION, (socket) => {
 //! Change Port to process.env.port
 server.listen(4000, () => {
     console.log("Server is up and running!\n");
-    
-    InitializeUserList();
 
-    logOnlineUsers(userList);
+    // ConsoleLogs Online Users
+    ConsoleLogOnlineUsers(quickUserList);
 
     console.log();
 
-    elevatePrompt();
+    // readLine Prompt
+    ElevatePrompt();
 });
 
+// TODO: Refactor This to another File
 const InitializeUser = (socket, io) => {
-    //Initializing Nickname for User
-    InitializeNickname(socket);
-    InitializeUserRoom(socket, io);
+    // Initializing Nickname for User
+    InitializeNickname(socket, io);
 
-    logOnlineUsers(userList);
+    // ConsoleLogs Online Users
+    ConsoleLogOnlineUsers(quickUserList);
 
-    elevatePrompt();
+    // readLine Prompt
+    ElevatePrompt();
 }
 
-const InitializeNickname = (socket) => {
+// TODO: Refactor This to another File
+const InitializeNickname = (socket, io) => {
     // Initializing Nickname
     let tempNick = rn.retNick();
 
-    // console.log("Client " + socket.id + " Connected!");
+    // Sending the Randomly Assigned Nickname to the Client
     socket.emit(SEND_NICK, tempNick);
-    
+
     // Initializing Nickname to a Local DB [with Rooms]
-    userList[channelList[CHANNEL_ENUMS["LOBBY"]]].push({id: socket.id, name: tempNick});
+    // Instead of Initializing this push with the Nickname, we might want to look into generating our own uid to save in an actual DB
+    AssignUserRoom(socket, tempNick, defaultChannel, "", false);
 }
 
-const InitializeUserRoom = (socket) => {
+// TODO: Refactor This to another File
+const AssignUserRoom = (socket, tempNick, channelName, switchChannel) => {
+
+    channelName = channelName.toLowerCase();
     
-    // Poggers this works!
-    // console.log(CHANNELS[channelList[0]]);
-
-    // Joins Lobby [Default] Channel
-    socket.join(CHANNELS["LOBBY"]);
-
-    // Sends the user the information on which Lobby they are in
-    socket.emit(SEND_ROOM, CHANNELS["LOBBY"])
+    if(tempNick !== ""){
+        // Adding the User into the List
+        // Refactor into SQL in the future
+        quickUserList[socket.id] = {name: tempNick, shard: channelName};
+    }
     
-    // Msg to the user to which Lobby they are in
-    socket.emit(CHAT_MSG, "Joined Channel: Lobby");
-}
+    if(CHANNELS[channelName.toUpperCase()]){
+        //console.log(socket.id);
 
-const InitializeUserList = () => {
-    for(let i = 0; i < channelList.length; i++){
-        userList[channelList[i]] = [];
+        // Leave Shard to stop receiving text from that Shard
+        if(switchChannel){
+            socket.leave(CHANNELS[quickUserList[socket.id].shard.toUpperCase()]);
+
+            quickUserList[socket.id].shard = channelName;
+        }
+
+        // Joins Shard [Default] Channel
+        // TODO: Rename Channels to Shard
+        socket.join(CHANNELS[channelName.toUpperCase()]);
+
+        // Sends the user the information on which Shard they are in
+        socket.emit(SEND_ROOM, CHANNELS[channelName]);
+    
+        // Msg to the user to which Shard they are in
+        socket.emit(CHAT_MSG, "Joined Shard: " + channelName.charAt(0).toUpperCase() + channelName.slice(1)); 
+
+
+    } else {
+        const errorMsg = "The shard you are attempting to join does NOT exist.";
+        socket.emit(CHAT_MSG, "SYSTEM: " + errorMsg); 
     }
 }
 
-rlRead(userList);
+RLRead(quickUserList);

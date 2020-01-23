@@ -9,19 +9,32 @@ const readline = require('readline').createInterface({
 const {cliAction} = require('../types');
 
 // CLI Actions
-const { ONLINE, EXIT} = cliAction;
+const { ONLINE, EXIT } = cliAction;
 
-const elevatePrompt = () => {
+const ElevatePrompt = () => {
     readline.prompt(true);
 }
 
 // Online Log Command
-const logOnlineUsers = (userList) => {
-    console.log("Users Online: \n", userList);
+const ConsoleLogOnlineUsers = (userList) => {
+    let str = "Users \x1b[32mOnline\x1b[0m:\n\n";
+
+    
+    for(let key in userList) {
+        if(userList.hasOwnProperty(key)){
+            let randColor = Math.floor(Math.random() * Math.floor(3)) + 31;
+            str += "\x1b[4m";
+            str += userList[key].name;
+            str += "\x1b[0m";
+        }
+        str += "\n";
+    }
+
+    console.log(str);
 }
 
 //Reading Line
-const rlRead = (userList) => {
+const RLRead = (userList) => {
     readline.on('line', (cmd) => {
         // console.log("You just typed: " + cmd);
         let command = cmd.split(" ");
@@ -30,7 +43,7 @@ const rlRead = (userList) => {
         if(cmd.trim() !== ''){
             switch(command[0].trim().toLowerCase()){
                 case ONLINE:
-                    logOnlineUsers(userList);
+                    ConsoleLogOnlineUsers(userList);
                     break;
                 case EXIT:
                     readline.close();
@@ -51,7 +64,7 @@ const rlRead = (userList) => {
 }
 
 module.exports = {
-    logOnlineUsers,
-    rlRead,
-    elevatePrompt,
+    ConsoleLogOnlineUsers,
+    RLRead,
+    ElevatePrompt,
 };

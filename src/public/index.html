@@ -33,7 +33,7 @@
     <script type="text/javascript">
 
       //console.log(msgElement.value);
-      $(function() {
+      $(() => {
         const socket = io();
 
         const welcomeElement = document.getElementById("welcome");
@@ -47,15 +47,60 @@
 
           //Refactor into Command System Later down the Line.
           let commandCheck = $('#m').val().split(" ");
-          if(commandCheck.length >= 2 && commandCheck[0] === "/nick"){
-            // console.log("CHANGE NICKNAME TO: " + commandCheck[1]);
+
+          // Bad if, in a rush, change later
+          if((commandCheck.length >= 2 && commandCheck[0].charAt(0) === '/') || commandCheck[0].charAt(0) === '/'){
+            // If it's a Command, just clear the Text Area
             $('#m').val("");
-            nickId = commandCheck[1];
 
-            socket.emit('change nick', commandCheck[1]);
+            // Switch Command System
+            // TODO: Const Routing with the Commands & Action Types [Similar to Redux]
+            switch(commandCheck[0]){
+              /**
+               * USAGE: /nick <name>
+               * DESCRIPTION: Changes your Nickname in the Chat
+              */
+              case "/nick":
+                
+                // Wrong Usage, Break.
+                if(commandCheck.length >= 3){
+                  $('#messages').append($('<li>').text("USAGE: /nick <name>"));
+                  break;
+                }
+                
+                // Change Name & Inform Server
+                nickId = commandCheck[1];
+                socket.emit('change nick', commandCheck[1]);
+                break;
 
-            return false;
+              /**
+               * USAGE: /join <shard>
+               * DESCRIPTION: Joins the specified Shard
+              */
+              case "/join":
+                if(commandCheck.length >= 3){
+                  $('#messages').append($('<li>').text("USAGE: /join <shard>"));
+                  break;
+                }
+
+                socket.emit('join room', {room: commandCheck[1], switchRoom: true});
+                break;
+
+              default:
+                $('#messages').append($('<li>').text("SYSTEM: Command does NOT exist."));
+                break;
+            }
           }
+
+          // if(commandCheck.length >= 2 && commandCheck[0] === "/nick"){
+          //   // console.log("CHANGE NICKNAME TO: " + commandCheck[1]);
+          //   $('#m').val("");
+          //   nickId = commandCheck[1];
+
+          //   socket.emit('change nick', commandCheck[1]);
+
+          //   return false;
+          // }
 
           //Sending the msg, Refactor to Discord Send Pending. Offload to Client instead of Server Handling
           if(roomName !== ""){
@@ -67,10 +112,11 @@
           }
           
           return false;
-        })
+        });
 
         //Displaying Chat Msg received by Server
         socket.on("chat msg", (msg) => {
+          console.log(msg);
           $('#messages').append($('<li>').text(msg));
         });
 
@@ -81,7 +127,7 @@
 
         socket.on("room", (room) => {
           roomName = room;
-        })
+        });
         
         // setInterval(() => {
         //     if($('#m').val()){
