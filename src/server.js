@@ -1,3 +1,6 @@
+//As Early as Possible!
+require('dotenv').config();
+
 // Imports & Defines created at the end ();
 const app = require('express')();
 const server = require('http').createServer(app);
@@ -58,16 +61,16 @@ io.on(CONNECTION, (socket) => {
 
 //! Very important, it needs to use http cause socket.io wont work with app.listen
 //! Change Port to process.env.port
-server.listen(4000, () => {
-    console.log("Server is up and running!\n");
+server.listen(process.env.PORT, () => {
+    console.log("Server is up and running on port: " + process.env.PORT + "!\n");
 
     // ConsoleLogs Online Users
     ConsoleLogOnlineUsers(quickUserList);
 
-    console.log();
+    // console.log();
 
     // readLine Prompt
-    ElevatePrompt();
+    // ElevatePrompt();
 });
 
 // TODO: Refactor This to another File
@@ -79,7 +82,7 @@ const InitializeUser = (socket, io) => {
     ConsoleLogOnlineUsers(quickUserList);
 
     // readLine Prompt
-    ElevatePrompt();
+    // ElevatePrompt();
 }
 
 // TODO: Refactor This to another File
@@ -133,4 +136,4 @@ const AssignUserRoom = (socket, tempNick, channelName, switchChannel) => {
     }
 }
 
-RLRead(quickUserList);
+//RLRead(quickUserList);

@@ -1,0 +1,11 @@
+version: "3.5"
+
+services:
+    chat-client:
+        container_name: chat-io
+        image: chat-io/server
+        build:
+            dockerfile: Dockerfile
+            context: .
+        env_file: .env
+        command: sh
